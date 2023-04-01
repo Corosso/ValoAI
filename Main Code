@@ -1,0 +1,35 @@
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
+
+# Cargar los datos desde un archivo CSV
+data = pd.read_csv('datos.csv')
+
+# Dividir los datos en conjuntos de entrenamiento y prueba
+X = data.drop('Winner', axis=1)
+y = data['Winner']
+
+# Convertir las columnas de puntajes a números flotantes
+#data.iloc[:, 1] = data.iloc[:, 1].astype(float)
+#data.iloc[:, 0] = data.iloc[:, 0].astype(float)
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Codificar los nombres o identificadores de los equipos utilizando One-Hot Encoding
+X_train_encoded = pd.get_dummies(X_train, columns=['Team A(Name)', 'Team B(Name)'])
+X_test_encoded = pd.get_dummies(X_test, columns=['Team A(Name)', 'Team B(Name)'])
+
+# Unir las variables codificadas con los puntajes de los jugadores
+X_train_concatenated = np.concatenate([X_train.values, X_train.iloc[:, :10].values], axis=1)
+X_test_concatenated = np.concatenate([X_test.values, X_test.iloc[:, :10].values], axis=1)
+
+# Entrenar el modelo de Regresión Logística
+model = LogisticRegression()
+model.fit(X_train, y_train)
+
+# Evaluar el rendimiento del modelo en los datos de prueba
+y_pred = model.predict(X_test_concatenated)
+accuracy = accuracy_score(y_test, y_pred)
+print('Precisión del modelo:', accuracy)
