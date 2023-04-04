@@ -3,36 +3,51 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
+from sklearn.preprocessing import LabelEncoder
 
-# Load the data CSV
+# Cargar los datos desde un archivo CSV
 data = pd.read_csv('datos.csv')
 
+# Separar los puntajes en columnas separadas
+scoresA = data['Team A'].str.split(',', expand=True).astype(float)
+scoresA.columns = ['acs_1', 'acs_2', 'acs_3', 'acs_4', 'acs_5']
 
-# Preaparting test and train data
-X = data.drop('Winner', axis=1)
-y = data['Winner']
+scoresB = data['Team B'].str.split(',', expand=True).astype(float)
+scoresB.columns = ['acs_1', 'acs_2', 'acs_3', 'acs_4', 'acs_5']
 
-# Convertir las columnas de puntajes a números flotantes
-# Convert score columns to float
-#data.iloc[:, 1] = data.iloc[:, 1].astype(float)
-#data.iloc[:, 0] = data.iloc[:, 0].astype(float)
-
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# Convertir los nombres de los equipos a valores numéricos
+encoder = LabelEncoder()
+data['Team A(Name)'] = encoder.fit_transform(data['Team A(Name)'])
+data['Team B(Name)'] = encoder.fit_transform(data['Team B(Name)'])
 
 
+
+# Concatenar los puntajes con el resto de los datos
+data = pd.concat([data.drop('Team A', axis=1), scoresA], axis=1)
+data = pd.concat([data.drop('Team B', axis=1), scoresB], axis=1)
+
+
+
+
+# Dividir los datos en conjuntos de entrenamiento y prueba
+X_train, X_test, y_train, y_test = train_test_split(data.drop('Winner', axis=1), data['Winner'], test_size=0.5, shuffle=False, random_state=42)
+
+# Codificar los nombres o identificadores de los equipos utilizando One-Hot Encoding
+X_train_encoded = pd.get_dummies(X_train, columns=['Team A(Name)', 'Team B(Name)'])
+X_test_encoded = pd.get_dummies(X_test, columns=['Team A(Name)', 'Team B(Name)'])
 
 # Unir las variables codificadas con los puntajes de los jugadores
-# Concatenate variables with the scores
-X_train_concatenated = np.concatenate([X_train.values, X_train.iloc[:, :10].values], axis=1)
-X_test_concatenated = np.concatenate([X_test.values, X_test.iloc[:, :10].values], axis=1)
+X_train_concatenated = np.concatenate([X_train_encoded.values, X_train.iloc[:, :].values], axis=1)
+X_test_concatenated = np.concatenate([X_test_encoded.values, X_test.iloc[:, :].values], axis=1)
 
 # Entrenar el modelo de Regresión Logística
-# Train model usgin Logistic Regression
 model = LogisticRegression()
-model.fit(X_train, y_train)
+model.fit(X_train_concatenated, y_train)
+
+print(X_train_concatenated.shape)
+print(X_test_concatenated.shape)
 
 # Evaluar el rendimiento del modelo en los datos de prueba
-# Test performance
 y_pred = model.predict(X_test_concatenated)
 accuracy = accuracy_score(y_test, y_pred)
 print('Precisión del modelo:', accuracy)
