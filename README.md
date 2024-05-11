@@ -1,4 +1,4 @@
-## eSports Match Outcome Prediction Project
+## Valorant Match Outcome Prediction Project
 Welcome to the eSports Match Outcome Prediction Project! This project focuses on developing a machine learning model to predict match outcomes in eSports, specifically targeting the game Valorant. By leveraging historical data on team performance, map win rates, and previous match results, this model aims to provide accurate predictions on which team will win a match.
 Table of Contents
 
@@ -11,8 +11,6 @@ Features
 •	Prediction of match outcomes in Valorant eSports matches.
 
 •	Integration of machine learning model into a production environment.
-
-•	User-friendly interface for accessing match predictions.
 
 •	Rigorous testing and validation procedures to ensure model reliability.
 
